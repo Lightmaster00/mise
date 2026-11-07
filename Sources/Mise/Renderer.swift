@@ -306,7 +306,7 @@ enum Projection {
                         rotation: Double, center: CGPoint) -> [CGPoint] {
         let local: [(CGFloat, CGFloat)] = [(-w / 2, h / 2), (w / 2, h / 2), (w / 2, -h / 2), (-w / 2, -h / 2)]
         let ya = yaw * .pi / 180, pa = pitch * .pi / 180, ra = -rotation * .pi / 180
-        let distance = 2.4 * max(w, h)
+        let distance = 1.7 * max(w, h)
         return local.map { x, y in
             // Turn around the vertical axis (positive yaw: the right side goes away)…
             let x1 = x * cos(ya)

@@ -86,6 +86,81 @@ struct Template: Identifiable {
             Template(id: "square", title: S.tplSquare) {
                 project(1080, 1080, lavender, [Item(.phone, finish: "blue", size: 0.84, rotation: -10, shadow: 0.7)])
             },
+            Template(id: "android", title: S.tplAndroid) {
+                project(1600, 1200, sky, [Item(.phoneAndroid, finish: "white", size: 0.78, shadow: 0.7)])
+            },
+            Template(id: "twoPhones", title: S.tplTwoPhones) {
+                project(1600, 1200, mint, [
+                    Item(.phone, finish: "graphite", x: 0.37, y: 0.52, size: 0.76, rotation: -4),
+                    Item(.phoneAndroid, finish: "graphite", x: 0.63, y: 0.48, size: 0.76, rotation: 4),
+                ])
+            },
+            Template(id: "fan", title: S.tplFan) {
+                project(1920, 1080, sky, [
+                    Item(.phone, finish: "white", x: 0.18, y: 0.56, size: 0.6, rotation: -10, yaw: -18),
+                    Item(.phone, finish: "white", x: 0.34, y: 0.53, size: 0.66, rotation: -5, yaw: -9),
+                    Item(.phone, finish: "white", x: 0.66, y: 0.53, size: 0.66, rotation: 5, yaw: 9),
+                    Item(.phone, finish: "white", x: 0.82, y: 0.56, size: 0.6, rotation: 10, yaw: 18),
+                    Item(.phone, finish: "white", x: 0.5, y: 0.5, size: 0.74),
+                ])
+            },
+            Template(id: "reflection", title: S.tplReflection) {
+                var item = Item(.phone, finish: "graphite", y: 0.42, size: 0.62, shadow: 0.4)
+                item.reflection = true
+                return project(1600, 1200, graphite, [item])
+            },
+            Template(id: "flatLay", title: S.tplFlatLay) {
+                project(1600, 1200, peach, [
+                    Item(.phone, finish: "gold", x: 0.36, y: 0.5, size: 0.72, rotation: -14, pitch: 28, shadow: 0.7),
+                    Item(.phone, finish: "gold", x: 0.64, y: 0.5, size: 0.72, rotation: 14, pitch: 28, shadow: 0.7),
+                ])
+            },
+            Template(id: "tabletLandscape", title: S.tplTabletLandscape) {
+                var item = Item(.tablet, finish: "spacegray", size: 0.66, shadow: 0.7)
+                item.landscape = true
+                return project(1600, 1200, lavender, [item])
+            },
+            Template(id: "tabletAngle", title: S.tplTabletAngle) {
+                project(1600, 1200, dusk, [Item(.tablet, finish: "silver", size: 0.78, rotation: 6, yaw: -20, pitch: 8, shadow: 0.9)])
+            },
+            Template(id: "watchPhone", title: S.tplWatchPhone) {
+                project(1600, 1200, sand, [
+                    Item(.phone, finish: "silver", x: 0.4, y: 0.5, size: 0.76),
+                    Item(.watch, finish: "silver", x: 0.68, y: 0.56, size: 0.52),
+                ])
+            },
+            Template(id: "ecosystem", title: S.tplEcosystem) {
+                project(1920, 1080, paper, [
+                    Item(.desktop, finish: "silver", x: 0.4, y: 0.47, size: 0.7),
+                    Item(.laptop, finish: "silver", x: 0.7, y: 0.66, size: 0.42),
+                    Item(.phone, finish: "silver", x: 0.88, y: 0.66, size: 0.36),
+                ])
+            },
+            Template(id: "responsive", title: S.tplResponsive) {
+                project(1920, 1200, lavender, [
+                    Item(.browser, finish: "light", x: 0.44, y: 0.48, size: 0.68, shadow: 0.6),
+                    Item(.phone, finish: "graphite", x: 0.8, y: 0.6, size: 0.56),
+                ])
+            },
+            Template(id: "banner", title: S.tplBanner) {
+                project(1500, 500, sky, [
+                    Item(.laptop, finish: "spacegray", x: 0.42, y: 0.56, size: 0.82),
+                    Item(.phone, finish: "graphite", x: 0.66, y: 0.6, size: 0.7),
+                ])
+            },
+            Template(id: "appStore", title: S.tplAppStore) {
+                project(1290, 2796, mint, [Item(.phone, finish: "white", y: 0.6, size: 0.72, shadow: 0.6)])
+            },
+            Template(id: "letter", title: S.tplLetter) {
+                project(1600, 1200, .texture(.grain, hex("#E4DDD2")), [Item(.paper, finish: "paper", size: 0.86, rotation: -3, shadow: 0.5)])
+            },
+            Template(id: "stationery", title: S.tplStationery) {
+                project(1920, 1080, .texture(.linen, hex("#E9E4DA")), [
+                    Item(.paper, finish: "paper", x: 0.36, y: 0.5, size: 0.82, rotation: -4, shadow: 0.5),
+                    Item(.book, finish: "cloth", x: 0.68, y: 0.48, size: 0.62, rotation: 6, shadow: 0.7),
+                    Item(.businessCard, finish: "kraft", x: 0.82, y: 0.78, size: 0.26, rotation: -12, shadow: 0.6),
+                ])
+            },
             Template(id: "photo", title: S.tplPhoto) {
                 var p = project(1600, 1200, .solid(hex("#DDDDDD")), [Item(.screenOnly, finish: "none")])
                 p.sanitize()

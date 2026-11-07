@@ -32,11 +32,15 @@ struct MiseApp: App {
                 Button(S.undo) { store.undo() }.keyboardShortcut("z").disabled(!store.canUndo)
                 Button(S.redo) { store.redo() }.keyboardShortcut("z", modifiers: [.command, .shift]).disabled(!store.canRedo)
             }
-            CommandGroup(replacing: .pasteboard) {
+            // The system Cut/Copy/Paste stay as they are (text fields need them); the canvas
+            // handles ⌘V and Delete itself when it has the focus.
+            CommandGroup(after: .pasteboard) {
+                Divider()
                 Button(S.copyImage) { Exporter.copy(store.project) }.keyboardShortcut("c", modifiers: [.command, .shift])
-                Button(S.pasteDesign) { store.pasteDesign() }.keyboardShortcut("v")
+                Button(S.pasteDesign) { store.pasteDesign() }.keyboardShortcut("v", modifiers: [.command, .option])
                 Button(S.duplicate) { store.duplicateSelected() }.keyboardShortcut("d")
-                Button(S.delete) { store.deleteSelected() }.keyboardShortcut(.delete, modifiers: [])
+                Button(S.deleteDevice) { store.deleteSelected() }.keyboardShortcut(.delete, modifiers: .command)
+                    .disabled(store.selection == nil)
             }
             CommandGroup(after: .appInfo) {
                 Button(S.checkForUpdates) { Updater.checkNow() }.disabled(!Updater.isConfigured)

@@ -174,7 +174,10 @@ private struct CanvasView: View {
             }
         }
         .background(Color(nsColor: .underPageBackgroundColor))
+        .focusable()
+        .focusEffectDisabled()
         .onDeleteCommand { store.deleteSelected() }
+        .onPasteCommand(of: [.png, .tiff, .image, .fileURL]) { _ in store.pasteDesign() }
     }
 
     /// The canvas rectangle inside the view, keeping its proportions.

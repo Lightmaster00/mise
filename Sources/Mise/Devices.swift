@@ -382,11 +382,11 @@ enum DeviceRenderer {
         ctx.restoreGState()
         if tape {
             ctx.setFillColor(RGBA(1, 1, 1, 0.55).cgColor)
-            for (x, angle) in [(r.minX + r.width * 0.1, 0.5), (r.maxX - r.width * 0.1, -0.5)] {
+            for (x, angle) in [(r.minX + r.width * 0.12, 0.6), (r.maxX - r.width * 0.12, -0.6)] {
                 ctx.saveGState()
-                ctx.translateBy(x: x, y: r.maxY - r.height * 0.01)
+                ctx.translateBy(x: x, y: r.maxY - r.height * 0.03)
                 ctx.rotate(by: CGFloat(angle))
-                ctx.fill(CGRect(x: -r.width * 0.09, y: -r.height * 0.018, width: r.width * 0.18, height: r.height * 0.036))
+                ctx.fill(CGRect(x: -r.width * 0.07, y: -r.height * 0.016, width: r.width * 0.14, height: r.height * 0.032))
                 ctx.restoreGState()
             }
         }

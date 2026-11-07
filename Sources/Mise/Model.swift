@@ -151,6 +151,16 @@ struct Project: Codable, Equatable {
         var used = Set(items.compactMap(\.screen))
         if case .image(let asset, _, _) = background { used.insert(asset) }
         assets = assets.filter { used.contains($0.key) && $0.value.count <= Self.maxAssetBytes }
+        // Keep color lists short and angles sane, whatever the file says.
+        switch background {
+        case .gradient(let colors, let angle):
+            let c = colors.count < 2 ? [RGBA(hex: "#E9E4FF")!, RGBA(hex: "#FFE3EC")!] : Array(colors.prefix(8))
+            background = .gradient(c, angle: angle.isFinite ? angle.truncatingRemainder(dividingBy: 360) : 135)
+        case .mesh(let colors, let seed):
+            let c = colors.count < 2 ? [RGBA(hex: "#1B1640")!, RGBA(hex: "#6E5BFF")!] : Array(colors.prefix(8))
+            background = .mesh(c, seed: seed)
+        default: break
+        }
         if case .image(let asset, let blur, let dim) = background {
             background = assets[asset] == nil ? .solid(.white)
                 : .image(asset: asset, blur: min(max(blur.isFinite ? blur : 0, 0), 60), dim: min(max(dim.isFinite ? dim : 0, 0), 0.9))

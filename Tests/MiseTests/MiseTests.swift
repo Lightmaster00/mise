@@ -33,6 +33,19 @@ final class ModelTests: XCTestCase {
         XCTAssertTrue(p.assets.isEmpty, "unused images are dropped")
     }
 
+    func testBackgroundColorListsAreBounded() {
+        var p = Project()
+        p.background = .gradient(Array(repeating: .white, count: 5000), angle: .infinity)
+        p.sanitize()
+        guard case .gradient(let colors, let angle) = p.background else { return XCTFail() }
+        XCTAssertEqual(colors.count, 8)
+        XCTAssertTrue(angle.isFinite)
+        p.background = .mesh([], seed: .max)
+        p.sanitize()
+        guard case .mesh(let mesh, _) = p.background else { return XCTFail() }
+        XCTAssertGreaterThanOrEqual(mesh.count, 2)
+    }
+
     func testGarbageIsRejected() {
         XCTAssertThrowsError(try Project.decode(Data("not json".utf8)))
         XCTAssertNil(ProjectStore.normalizedImageData(Data("hello".utf8)))
@@ -97,6 +110,19 @@ final class RenderTests: XCTestCase {
                     XCTAssertGreaterThan(coverage(image), 0.3, "\(kind) \(finish.id) draws something")
                 }
             }
+        }
+    }
+
+    @MainActor func testTemplatesAreUniqueAndValid() {
+        let all = Template.all
+        XCTAssertEqual(Set(all.map(\.id)).count, all.count)
+        XCTAssertGreaterThanOrEqual(all.count, 30)
+        for template in all {
+            var p = template.make()
+            let before = p.items.count
+            p.sanitize()
+            XCTAssertEqual(p.items.count, before, template.id)
+            XCTAssertFalse(template.title.isEmpty, template.id)
         }
     }
 

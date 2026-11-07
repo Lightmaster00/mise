@@ -36,6 +36,7 @@ enum S {
     static var undo: String { tr("Undo", "Annuler", "Deshacer", "Widerrufen", "取り消す") }
     static var redo: String { tr("Redo", "Rétablir", "Rehacer", "Wiederholen", "やり直す") }
     static var duplicate: String { tr("Duplicate", "Dupliquer", "Duplicar", "Duplizieren", "複製") }
+    static var deleteDevice: String { tr("Delete Device", "Supprimer l'appareil", "Eliminar dispositivo", "Gerät löschen", "デバイスを削除") }
     static var delete: String { tr("Delete", "Supprimer", "Eliminar", "Löschen", "削除") }
     static var untitled: String { tr("Untitled", "Sans titre", "Sin título", "Unbenannt", "名称未設定") }
     static var mockup: String { tr("Mockup", "Maquette", "Maqueta", "Mockup", "モックアップ") }
@@ -160,6 +161,20 @@ enum S {
     static var tplBook: String { tr("Book", "Livre", "Libro", "Buch", "本") }
     static var tplStory: String { tr("Story (9:16)", "Story (9:16)", "Historia (9:16)", "Story (9:16)", "ストーリー (9:16)") }
     static var tplSquare: String { tr("Square Post", "Post carré", "Publicación cuadrada", "Quadratischer Post", "正方形の投稿") }
+    static var tplAndroid: String { tr("Android Phone", "Téléphone Android", "Teléfono Android", "Android-Smartphone", "Android スマートフォン") }
+    static var tplTwoPhones: String { tr("iOS & Android", "iOS et Android", "iOS y Android", "iOS & Android", "iOS と Android") }
+    static var tplFan: String { tr("Phone Fan", "Éventail de téléphones", "Abanico de teléfonos", "Smartphone-Fächer", "スマートフォンの扇形") }
+    static var tplReflection: String { tr("Reflection", "Reflet", "Reflejo", "Spiegelung", "反射") }
+    static var tplFlatLay: String { tr("Flat Lay", "À plat", "Vista cenital", "Flat Lay", "フラットレイ") }
+    static var tplTabletLandscape: String { tr("Tablet, Landscape", "Tablette paysage", "Tableta horizontal", "Tablet quer", "タブレット(横)") }
+    static var tplTabletAngle: String { tr("Tablet in Perspective", "Tablette en perspective", "Tableta en perspectiva", "Tablet perspektivisch", "タブレット(遠近)") }
+    static var tplWatchPhone: String { tr("Watch & Phone", "Montre et téléphone", "Reloj y teléfono", "Uhr & Smartphone", "ウォッチとスマートフォン") }
+    static var tplEcosystem: String { tr("Every Screen", "Tous les écrans", "Todas las pantallas", "Alle Bildschirme", "すべての画面") }
+    static var tplResponsive: String { tr("Responsive Website", "Site responsive", "Web adaptable", "Responsive Website", "レスポンシブサイト") }
+    static var tplBanner: String { tr("Header Banner", "Bannière d'en-tête", "Banner de cabecera", "Header-Banner", "ヘッダーバナー") }
+    static var tplAppStore: String { tr("App Store Screenshot", "Capture App Store", "Captura de App Store", "App-Store-Screenshot", "App Store スクリーンショット") }
+    static var tplLetter: String { tr("Letter Sheet", "Feuille A4", "Hoja de carta", "Briefbogen", "レターシート") }
+    static var tplStationery: String { tr("Stationery Set", "Papeterie", "Papelería", "Geschäftsausstattung", "ステーショナリー") }
     static var tplPhoto: String { tr("Your Photo", "Ta photo", "Tu foto", "Dein Foto", "あなたの写真") }
     static func colorNumber(_ n: Int) -> String { tr("Color \(n)", "Couleur \(n)", "Color \(n)", "Farbe \(n)", "色 \(n)") }
     static func batchFailures(_ n: Int) -> String { tr("\(n) image(s) could not be exported", "\(n) image(s) n'ont pas pu être exportée(s)", "\(n) imagen(es) no se pudieron exportar", "\(n) Bild(er) konnten nicht exportiert werden", "\(n) 枚の画像を書き出せませんでした") }

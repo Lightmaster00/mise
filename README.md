@@ -30,7 +30,7 @@ Updates install from inside the app, in one click.
   its screen: your design is mapped onto it in perspective.
 - **Website capture**: type an address, Mise loads the page privately (no cookies, no history) at
   phone, tablet or computer width — the first screen or the whole page — and puts it on the device.
-- **17 templates** to start from (phone in 3D, three phones, laptop and phone, story 9:16, square
+- **31 ready-made** to start from (phone in 3D, three phones, laptop and phone, story 9:16, square
   post, business card, book…). Your designs stay in place when you switch template.
 - **Export** in PNG, JPEG or HEIC at 1x to 4x (up to 16 000 pixels), copy to the clipboard, or
   **export for several designs at once**: the same mockup, one image per design.
