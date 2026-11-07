@@ -32,8 +32,9 @@ jobs:
         if: always()
         run: |
           mkdir -p previews
-          PREVIEW_DIR=$PWD/previews swift test --filter PreviewTests 2>&1 | tail -3
-          for f in previews/*.jpg; do echo "PREVIEW_BEGIN $(basename $f)"; base64 -i "$f" | tr -d '\n'; echo; echo "PREVIEW_END"; done
+          PREVIEW_DIR=$PWD/previews swift test --filter PreviewTests 2>&1 | grep -E "error|failed|passed" | tail -5
+          ls -la previews
+          for f in previews/*.jpg; do echo "PREVIEW_BEGIN $(basename "$f")"; base64 -i "$f" | tr -d '\n' | fold -w 3000; echo; echo "PREVIEW_END"; done
 
       - name: Warnings
         if: always()
