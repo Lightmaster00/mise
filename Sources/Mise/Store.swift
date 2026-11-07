@@ -162,7 +162,7 @@ final class ProjectStore: ObservableObject {
     }
 
     /// Keeps any image ImageIO can read; very large images are scaled down and stored as PNG.
-    static func normalizedImageData(_ data: Data) -> Data? {
+    nonisolated static func normalizedImageData(_ data: Data) -> Data? {
         guard data.count <= 200 * 1024 * 1024,
               let source = CGImageSourceCreateWithData(data as CFData, nil),
               CGImageSourceGetCount(source) > 0,
