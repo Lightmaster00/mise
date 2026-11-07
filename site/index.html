@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mise — device and print mockups for your designs</title>
+<meta name="description" content="Put your app, website and print designs on beautiful devices, in seconds, on your Mac. Free and open source.">
+<link rel="icon" href="favicon.png">
+<meta property="og:title" content="Mise — your designs, on stage">
+<meta property="og:description" content="Device and print mockups made on your Mac. Free and open source.">
+<meta property="og:image" content="icon.png">
+<style>
+  :root {
+    --lagoon: #FFE7B8; --violet: #7B6BFF; --rose: #FF7AA8;
+    --night: #12122A; --night-2: #1C1D40; --text: #F2F0FA; --text-2: #A8A4C0; --line: rgba(255,255,255,.08);
+    --grad: linear-gradient(120deg, var(--violet), var(--rose));
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    color: var(--text); background: var(--night); -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 21px/1 ui-rounded, "SF Pro Rounded", -apple-system, sans-serif; text-decoration: none; }
+  .brand img { width: 34px; height: 34px; }
+  nav .links { display: flex; gap: 26px; font-size: 14px; color: var(--text-2); }
+  nav .links a { text-decoration: none; }
+  nav .links a:hover { color: var(--text); }
+
+  .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 56px 0 80px; }
+  .eyebrow { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+             color: var(--lagoon); background: rgba(34,211,197,.1); padding: 6px 12px; border-radius: 99px; margin-bottom: 22px; }
+  h1 { font: 800 clamp(40px, 6vw, 66px)/1.04 -apple-system, "SF Pro Display", sans-serif; letter-spacing: -.03em; margin-bottom: 22px; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: 21px; color: var(--text-2); max-width: 30em; margin-bottom: 34px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 15px 26px; border-radius: 14px; font-weight: 650;
+         text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+  .btn-primary { background: var(--grad); color: #fff; box-shadow: 0 10px 30px -12px rgba(124,92,255,.7); }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-ghost { border: 1px solid var(--line); background: var(--night-2); }
+  .btn-ghost:hover { border-color: rgba(124,92,255,.5); }
+
+  .shot { position: relative; aspect-ratio: 1 / 1; display: grid; place-items: center; }
+  .shot::before { content: ""; position: absolute; inset: 10%; border-radius: 50%; background: var(--grad); filter: blur(80px); opacity: .35; }
+  .shot img { position: relative; width: 80%; filter: drop-shadow(0 30px 50px rgba(0,0,0,.5)); }
+
+  section { padding: 70px 0; }
+  h2 { font: 750 clamp(28px, 4vw, 40px)/1.15 -apple-system, "SF Pro Display", sans-serif; letter-spacing: -.02em; margin-bottom: 14px; }
+  .sub { color: var(--text-2); max-width: 36em; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card { background: var(--night-2); border: 1px solid var(--line); border-radius: 20px; padding: 26px; }
+  .card svg { width: 42px; height: 42px; margin-bottom: 16px; }
+  .card h3 { font-size: 21px; margin-bottom: 6px; }
+  .card p { color: var(--text-2); font-size: 15px; }
+
+  .eq { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding: 26px; background: var(--night-2);
+        border: 1px solid var(--line); border-radius: 20px; }
+  .eq div { flex: 1; border-radius: 6px 6px 3px 3px; background: var(--grad); background-size: 1100% 100%; opacity: .9; }
+
+  .promise { background: linear-gradient(160deg, #1D1838, #120F22); border: 1px solid var(--line); border-radius: 28px; padding: 54px;
+             display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; }
+  .promise h3 { font-size: 21px; margin-bottom: 8px; }
+  .promise h3::before { content: ""; display: block; width: 34px; height: 4px; border-radius: 4px; background: var(--grad); margin-bottom: 16px; }
+  .promise p { color: var(--text-2); font-size: 15px; }
+
+  .final { text-align: center; padding: 90px 0 70px; }
+  .final img { width: 96px; margin-bottom: 20px; }
+  .final .cta { justify-content: center; margin-top: 28px; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; font-size: 14px; color: var(--text-2);
+           display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; padding-top: 24px; }
+    .shot { max-width: 360px; margin: 0 auto; }
+    .grid, .promise { grid-template-columns: 1fr; }
+    .promise { padding: 34px; }
+    nav .links { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="icon.png" alt="">Mise</a>
+    <div class="links"><a href="#features">Features</a><a href="https://github.com/Lightmaster00/mise">GitHub</a></div>
+  </nav>
+  <header class="hero">
+    <div>
+      <span class="eyebrow">Free · Open source · macOS 14+</span>
+      <h1>Your designs, <span>on stage.</span></h1>
+      <p class="lead">Drop a screenshot, pick a device, export. Beautiful mockups for your apps, websites and
+        print designs — made on your Mac in seconds, with nothing uploaded anywhere.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/Lightmaster00/mise/releases/latest/download/Mise.dmg">Download for Mac</a>
+        <a class="btn btn-ghost" href="https://github.com/Lightmaster00/mise">Source code</a>
+      </div>
+    </div>
+    <div class="shot"><img src="icon.png" alt="Mise icon"></div>
+  </header>
+</div>
+<section id="features">
+  <div class="wrap">
+    <h2>Everything to show your work.</h2>
+    <p class="sub">17 templates to start from, and every detail adjustable.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Devices, drawn</h3>
+        <p>Phones, tablet, laptop, display, watch, browser window — in vector, sharp at any size, in several finishes.</p>
+      </div>
+      <div class="card">
+        <h3>Print too</h3>
+        <p>Business card, poster, book and paper: your print designs, ready to show.</p>
+      </div>
+      <div class="card">
+        <h3>In 3D</h3>
+        <p>Turn and tilt every device, add shadows and reflections, combine several in one image.</p>
+      </div>
+      <div class="card">
+        <h3>Your photo scenes</h3>
+        <p>Drag four corners onto the screen in any photo: your design fits it in perspective.</p>
+      </div>
+      <div class="card">
+        <h3>Websites, captured</h3>
+        <p>Type an address: Mise captures the page at phone, tablet or computer width.</p>
+      </div>
+      <div class="card">
+        <h3>Export in batches</h3>
+        <p>PNG, JPEG or HEIC up to 4x — or the same mockup for a whole folder of designs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="wrap">
+    <div class="promise">
+      <div><h3>Native</h3><p>Written in Swift: fast previews, exports up to 16 000 pixels.</p></div>
+      <div><h3>Private</h3><p>Rendered on your Mac. No account, no upload, no tracking. Free and open source (MIT).</p></div>
+      <div><h3>Always up to date</h3><p>New versions are offered automatically and install in one click.</p></div>
+    </div>
+  </div>
+</section>
+<div class="wrap">
+  <div class="final">
+    <img src="icon.png" alt="">
+    <h2>Lights up. Your turn.</h2>
+    <p class="sub" style="margin: 0 auto">Free, for macOS 14 Sonoma or later. If macOS blocks the app on first launch:
+      <em>System Settings › Privacy &amp; Security › Open Anyway</em>.</p>
+    <div class="cta"><a class="btn btn-primary" href="https://github.com/Lightmaster00/mise/releases/latest/download/Mise.dmg">Download for Mac</a></div>
+  </div>
+  <footer><span>© 2026 Mise</span><span>Made in France · <a href="https://github.com/Lightmaster00/mise">Open source (MIT)</a></span></footer>
+</div>
+</body>
+</html>
