@@ -135,6 +135,29 @@ final class RenderTests: XCTestCase {
         }
     }
 
+    /// A design whose top half is red must still show red at the top once the tablet is in landscape.
+    func testLandscapeKeepsTheDesignUpright() throws {
+        let w = 400, h = 300
+        let ctx = try XCTUnwrap(CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                                          space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                          bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        ctx.setFillColor(CGColor(red: 0, green: 0, blue: 1, alpha: 1)); ctx.fill(CGRect(x: 0, y: 0, width: w, height: h / 2))
+        ctx.setFillColor(CGColor(red: 1, green: 0, blue: 0, alpha: 1)); ctx.fill(CGRect(x: 0, y: h / 2, width: w, height: h / 2))
+        let design = try XCTUnwrap(ctx.makeImage())
+        let image = try XCTUnwrap(DeviceRenderer.render(.tablet, finish: Finish.find("silver", for: .tablet),
+                                                        screen: design, height: 600, landscape: true))
+        XCTAssertGreaterThan(image.width, image.height)
+        let data = try XCTUnwrap(image.dataProvider?.data as Data?)
+        func pixel(_ x: Int, _ y: Int) -> (Int, Int) {   // (red, blue); row 0 is the top of the image
+            let o = y * image.bytesPerRow + x * 4
+            return (Int(data[o]), Int(data[o + 2]))
+        }
+        let top = pixel(image.width / 2, image.height / 4)
+        let bottom = pixel(image.width / 2, image.height * 3 / 4)
+        XCTAssertGreaterThan(top.0, top.1, "top of the screen should be red")
+        XCTAssertGreaterThan(bottom.1, bottom.0, "bottom of the screen should be blue")
+    }
+
     func testTransparentBackgroundStaysTransparent() {
         var p = Project()
         p.background = .transparent

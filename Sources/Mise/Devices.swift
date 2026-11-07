@@ -188,7 +188,14 @@ enum DeviceRenderer {
     }
 
     /// A pleasant generic app screen, used until a design is dropped.
-    static func drawPlaceholder(in r: CGRect, ctx: CGContext, turned: Bool) {
+    static func drawPlaceholder(in rect: CGRect, ctx: CGContext, turned: Bool) {
+        var r = rect
+        if turned {
+            // Same as a real design: lay the fake UI out in the turned frame.
+            ctx.translateBy(x: rect.midX, y: rect.midY)
+            ctx.rotate(by: -.pi / 2)
+            r = CGRect(x: -rect.height / 2, y: -rect.width / 2, width: rect.height, height: rect.width)
+        }
         let colors = [RGBA(hex: "#6E5BFF")!.cgColor, RGBA(hex: "#FF7AA8")!.cgColor] as CFArray
         if let g = CGGradient(colorsSpace: nil, colors: colors, locations: [0, 1]) {
             ctx.drawLinearGradient(g, start: CGPoint(x: r.minX, y: r.maxY), end: CGPoint(x: r.maxX, y: r.minY), options: [])
