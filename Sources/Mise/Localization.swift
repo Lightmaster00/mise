@@ -87,6 +87,34 @@ enum S {
     static var sendToBack: String { tr("Send to Back", "Mettre à l'arrière-plan", "Enviar al fondo", "Nach hinten", "最背面へ") }
     static var background: String { tr("Background", "Fond", "Fondo", "Hintergrund", "背景") }
     static var style: String { tr("Style", "Style", "Estilo", "Stil", "スタイル") }
+    static var tabDevice: String { tr("Device", "Appareil", "Dispositivo", "Gerät", "デバイス") }
+    static var tabScene: String { tr("Scene", "Scène", "Escena", "Szene", "シーン") }
+    static var design: String { tr("Design", "Design", "Diseño", "Design", "デザイン") }
+    static var chooseImage: String { tr("Choose Image…", "Choisir une image…", "Elegir imagen…", "Bild wählen …", "画像を選択…") }
+    static var replaceImage: String { tr("Replace Image…", "Remplacer l'image…", "Reemplazar imagen…", "Bild ersetzen …", "画像を置き換え…") }
+    static var otherSources: String { tr("Other Sources", "Autres sources", "Otras fuentes", "Weitere Quellen", "その他") }
+    static var pasteImage: String { tr("Paste Image", "Coller l'image", "Pegar imagen", "Bild einsetzen", "画像をペースト") }
+    static var fineTuning: String { tr("Fine Tuning", "Réglages fins", "Ajuste fino", "Feinabstimmung", "微調整") }
+    static var look: String { tr("Look", "Rendu", "Aspecto", "Darstellung", "見た目") }
+    static var arrange: String { tr("Arrange", "Disposer", "Organizar", "Anordnen", "整列") }
+    static var angleFront: String { tr("Front", "Face", "Frente", "Vorne", "正面") }
+    static var angleLeft: String { tr("Left", "Gauche", "Izquierda", "Links", "左") }
+    static var angleRight: String { tr("Right", "Droite", "Derecha", "Rechts", "右") }
+    static var angleTilted: String { tr("Tilted", "Incliné", "Inclinado", "Geneigt", "傾き") }
+    static var angleIsoLeft: String { tr("Iso Left", "Iso gauche", "Iso izq.", "Iso links", "等角 左") }
+    static var angleIsoRight: String { tr("Iso Right", "Iso droite", "Iso der.", "Iso rechts", "等角 右") }
+    static var angleFlat: String { tr("Lying Flat", "À plat", "Plano", "Liegend", "平置き") }
+    static var angleLeaning: String { tr("Leaning", "Penché", "Apoyado", "Schräg", "斜め") }
+    static var angleDynamic: String { tr("Dynamic", "Dynamique", "Dinámico", "Dynamisch", "ダイナミック") }
+    static var dropHint: String { tr("Drop your design on the device, or press ⌘V", "Dépose ton design sur l'appareil, ou ⌘V", "Suelta tu diseño en el dispositivo o pulsa ⌘V", "Ziehe dein Design auf das Gerät oder drücke ⌘V", "デザインをデバイスにドロップ、または ⌘V") }
+    static var kindPhotoShort: String { tr("Photo", "Photo", "Foto", "Foto", "写真") }
+    static var layers: String { tr("Scene", "Scène", "Escena", "Szene", "シーン") }
+    static var noLayers: String { tr("Nothing yet", "Rien pour l'instant", "Nada aún", "Noch leer", "まだありません") }
+    static var noDesign: String { tr("No design yet", "Pas encore de design", "Sin diseño", "Noch kein Design", "デザインなし") }
+    static var emptyTitle: String { tr("Put your design on stage", "Mets ton design en scène", "Pon tu diseño en escena", "Bring dein Design auf die Bühne", "デザインを舞台に") }
+    static var emptyText: String { tr("Add a device, or pick a template on the left, then drop a screenshot onto it.", "Ajoute un appareil ou choisis un modèle à gauche, puis dépose une capture dessus.", "Añade un dispositivo o elige una plantilla a la izquierda y suelta una captura encima.", "Füge ein Gerät hinzu oder wähle links eine Vorlage, und ziehe dann einen Screenshot darauf.", "デバイスを追加するか左のテンプレートを選び、スクリーンショットをドロップします。") }
+    static var addPhone: String { tr("Phone", "Téléphone", "Teléfono", "Telefon", "スマホ") }
+    static var addLaptop: String { tr("Laptop", "Portable", "Portátil", "Laptop", "ノートPC") }
     static var light: String { tr("Light", "Lumière", "Luz", "Licht", "光") }
     static var lightNone: String { tr("None", "Aucune", "Ninguna", "Keines", "なし") }
     static var lightLeaves: String { tr("Leaves", "Feuillage", "Hojas", "Blätter", "葉の影") }

@@ -6,20 +6,21 @@ struct ContentView: View {
     @ObservedObject var store = ProjectStore.shared
     @State private var showInspector = true
     @State private var showCapture = false
+    @State private var tab: InspectorTab = .device
 
     var body: some View {
         NavigationSplitView {
-            TemplateSidebar(store: store)
-                .navigationSplitViewColumnWidth(min: 180, ideal: 210, max: 280)
+            SceneSidebar(store: store)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 230, max: 300)
         } detail: {
-            CanvasView(store: store)
+            CanvasView(store: store, showCapture: $showCapture)
                 .inspector(isPresented: $showInspector) {
-                    InspectorView(store: store, showCapture: $showCapture)
-                        .inspectorColumnWidth(min: 270, ideal: 300, max: 380)
+                    InspectorView(store: store, showCapture: $showCapture, tab: $tab)
+                        .inspectorColumnWidth(min: 290, ideal: 310, max: 400)
                 }
         }
         .toolbar {
-            ToolbarItemGroup {
+            ToolbarItemGroup(placement: .navigation) {
                 Menu {
                     ForEach(DeviceKind.allCases.filter { $0 != .screenOnly }) { kind in
                         Button { store.addItem(kind) } label: { Label(kind.title, systemImage: kind.symbol) }
@@ -27,25 +28,32 @@ struct ContentView: View {
                     Divider()
                     Button { store.addItem(.screenOnly) } label: { Label(DeviceKind.screenOnly.title, systemImage: DeviceKind.screenOnly.symbol) }
                 } label: {
-                    Label(S.addDevice, systemImage: "plus.rectangle.on.rectangle")
+                    Label(S.addDevice, systemImage: "plus")
                 }
                 .help(S.addDevice)
+            }
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button { store.importDesign() } label: { Label(S.importDesign, systemImage: "photo.badge.plus") }
                     .help(S.importDesign)
                 Button { showCapture = true } label: { Label(S.captureWebsite, systemImage: "globe") }
                     .help(S.captureWebsite)
-                Button { Exporter.copy(store.project) } label: { Label(S.copyImage, systemImage: "doc.on.doc") }
-                    .help(S.copyImage)
-                Button { ExportSettings.shared.exportNow() } label: { Label(S.export, systemImage: "square.and.arrow.up") }
-                    .help(S.export)
+                Button { ExportSettings.shared.exportNow() } label: {
+                    Label(S.export, systemImage: "square.and.arrow.up").labelStyle(.titleAndIcon)
+                }
+                .buttonStyle(.borderedProminent)
+                .help(S.exportEllipsis)
                 Button { showInspector.toggle() } label: { Label(S.inspector, systemImage: "sidebar.right") }
                     .help(S.inspector)
             }
         }
         .sheet(isPresented: $showCapture) { CaptureSheet(store: store, isPresented: $showCapture) }
-        .navigationTitle(store.fileURL?.deletingPathExtension().lastPathComponent ?? "Mise")
+        .navigationTitle(store.fileURL?.deletingPathExtension().lastPathComponent ?? S.untitled)
         .navigationSubtitle(store.isDirty ? S.edited : "")
         .onReceive(NotificationCenter.default.publisher(for: .miseShowCapture)) { _ in showCapture = true }
+        .onChange(of: store.selection) { _, new in
+            // Picking something on the canvas brings its settings forward.
+            if new != nil, tab != .device { tab = .device }
+        }
     }
 }
 
@@ -72,6 +80,14 @@ extension DeviceKind {
         }
     }
 
+    /// Fits under a tile.
+    var shortTitle: String {
+        switch self {
+        case .screenOnly: return S.kindPhotoShort
+        default: return title
+        }
+    }
+
     var symbol: String {
         switch self {
         case .phone, .phoneAndroid: return "iphone"
@@ -90,39 +106,50 @@ extension DeviceKind {
     }
 }
 
-// MARK: - Templates
+// MARK: - Sidebar
 
-private struct TemplateSidebar: View {
+/// The scene's items (top first) and the templates to start from.
+private struct SceneSidebar: View {
     @ObservedObject var store: ProjectStore
     @State private var thumbnails: [String: CGImage] = [:]
     private let templates = Template.all
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(templates) { template in
-                    Button { store.apply(template) } label: {
-                        VStack(alignment: .leading, spacing: 5) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.secondary.opacity(0.08))
-                                if let image = thumbnails[template.id] {
-                                    Image(decorative: image, scale: 1).resizable().scaledToFit()
-                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                } else {
-                                    ProgressView().controlSize(.small)
-                                }
-                            }
-                            .aspectRatio(4 / 3, contentMode: .fit)
-                            Text(template.title).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+        List(selection: Binding(get: { store.selection }, set: { store.selection = $0 })) {
+            Section(S.layers) {
+                if store.project.items.isEmpty {
+                    Text(S.noLayers).font(.callout).foregroundStyle(.secondary)
+                }
+                ForEach(store.project.items.reversed()) { item in
+                    LayerRow(store: store, item: item).tag(item.id)
+                        .contextMenu {
+                            Button(S.duplicate) { store.selection = item.id; store.duplicateSelected() }
+                            Button(S.bringToFront) { store.selection = item.id; store.moveSelected(toFront: true) }
+                            Button(S.sendToBack) { store.selection = item.id; store.moveSelected(toFront: false) }
+                            Divider()
+                            Button(S.delete, role: .destructive) { store.selection = item.id; store.deleteSelected() }
                         }
+                }
+                .onMove { from, to in
+                    // The list shows the top item first: work on the reversed order.
+                    store.edit { p in
+                        var shown = Array(p.items.reversed())
+                        shown.move(fromOffsets: from, toOffset: to)
+                        p.items = shown.reversed()
                     }
-                    .buttonStyle(.plain)
-                    .help(template.title)
                 }
             }
-            .padding(12)
+            Section(S.templates) {
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 10) {
+                    ForEach(templates) { template in
+                        TemplateCell(title: template.title, image: thumbnails[template.id]) { store.apply(template) }
+                    }
+                }
+                .padding(.vertical, 4)
+                .selectionDisabled()
+            }
         }
-        .navigationTitle(S.templates)
+        .listStyle(.sidebar)
         .task { await renderThumbnails() }
     }
 
@@ -130,10 +157,56 @@ private struct TemplateSidebar: View {
         for template in templates {
             let project = template.make()
             let image = await Task.detached(priority: .utility) {
-                Renderer.shared.render(project, scale: 360 / CGFloat(max(project.width, project.height)))
+                Renderer.shared.render(project, scale: 220 / CGFloat(max(project.width, project.height)))
             }.value
             thumbnails[template.id] = image
         }
+    }
+}
+
+private struct LayerRow: View {
+    @ObservedObject var store: ProjectStore
+    let item: Item
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: item.kind.symbol).frame(width: 18).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(item.kind.title).lineLimit(1)
+                Text(item.screen == nil ? S.noDesign : Finish.find(item.finish, for: item.kind).title)
+                    .font(.caption).foregroundStyle(item.screen == nil ? Color.orange : Color.secondary).lineLimit(1)
+            }
+        }
+        .padding(.vertical, 1)
+    }
+}
+
+private struct TemplateCell: View {
+    let title: String
+    let image: CGImage?
+    let action: () -> Void
+    @State private var hover = false
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 4) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.primary.opacity(0.06))
+                    if let image {
+                        Image(decorative: image, scale: 1).resizable().scaledToFill()
+                    }
+                }
+                .aspectRatio(4 / 3, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(hover ? Color.accentColor : Color.primary.opacity(0.1), lineWidth: hover ? 1.5 : 0.5))
+                Text(title).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hover = $0 }
+        .help(title)
     }
 }
 
@@ -141,8 +214,11 @@ private struct TemplateSidebar: View {
 
 private struct CanvasView: View {
     @ObservedObject var store: ProjectStore
+    @Binding var showCapture: Bool
     @State private var dragStart: (x: Double, y: Double)?
     @State private var dragHandle: Int?
+    @State private var resizeStart: (size: Double, distance: CGFloat)?
+    @State private var guides: (vertical: Bool, horizontal: Bool) = (false, false)
     @State private var isTargeted = false
 
     var body: some View {
@@ -161,6 +237,7 @@ private struct CanvasView: View {
                         .shadow(color: .black.opacity(0.18), radius: 12, y: 4)
                 }
                 selectionOverlay(fit)
+                guideOverlay(fit)
             }
             .contentShape(Rectangle())
             .gesture(dragGesture(fit))
@@ -172,12 +249,51 @@ private struct CanvasView: View {
                     RoundedRectangle(cornerRadius: 12).strokeBorder(Color.accentColor, lineWidth: 3).padding(6)
                 }
             }
+            .overlay {
+                if store.project.items.isEmpty { emptyState }
+            }
+            .overlay(alignment: .bottom) {
+                if let item = store.selectedItem, item.screen == nil, item.kind != .screenOnly {
+                    Label(S.dropHint, systemImage: "arrow.down.doc")
+                        .font(.callout)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(.regularMaterial, in: Capsule())
+                        .padding(.bottom, 14)
+                        .transition(.opacity)
+                }
+            }
         }
         .background(Color(nsColor: .underPageBackgroundColor))
         .focusable()
         .focusEffectDisabled()
         .onDeleteCommand { store.deleteSelected() }
         .onPasteCommand(of: [.png, .tiff, .image, .fileURL]) { _ in store.pasteDesign() }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "iphone.gen3.badge.plus").font(.system(size: 40, weight: .light)).foregroundStyle(.secondary)
+            Text(S.emptyTitle).font(.title3.weight(.semibold))
+            Text(S.emptyText).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 320)
+            HStack {
+                Button { store.addItem(.phone) } label: { Label(S.addPhone, systemImage: "iphone") }
+                Button { store.addItem(.laptop) } label: { Label(S.addLaptop, systemImage: "laptopcomputer") }
+                Button { showCapture = true } label: { Label(S.website, systemImage: "globe") }
+            }
+            .controlSize(.large)
+        }
+        .padding(28)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func guideOverlay(_ fit: CGRect) -> some View {
+        if guides.vertical {
+            Rectangle().fill(Color.pink).frame(width: 1, height: fit.height).position(x: fit.midX, y: fit.midY)
+        }
+        if guides.horizontal {
+            Rectangle().fill(Color.pink).frame(width: fit.width, height: 1).position(x: fit.midX, y: fit.midY)
+        }
     }
 
     /// The canvas rectangle inside the view, keeping its proportions.
@@ -207,15 +323,13 @@ private struct CanvasView: View {
                 p.addLines(pts)
                 p.closeSubpath()
             }
-            .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.5, dash: item.kind == .screenOnly ? [] : [5, 4]))
-            if item.kind == .screenOnly {
-                ForEach(0..<4, id: \.self) { i in
+            .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.5))
+            ForEach(0..<4, id: \.self) { i in
                     Circle()
                         .fill(Color.white)
                         .overlay(Circle().stroke(Color.accentColor, lineWidth: 2))
-                        .frame(width: 14, height: 14)
+                        .frame(width: item.kind == .screenOnly ? 14 : 10, height: item.kind == .screenOnly ? 14 : 10)
                         .position(pts[i])
-                }
             }
         }
     }
@@ -226,11 +340,15 @@ private struct CanvasView: View {
                 let w = Double(fit.width), h = Double(fit.height)
                 if dragStart == nil && dragHandle == nil {
                     // Start: a corner handle of a photo screen, an item, or nothing.
-                    if let item = store.selectedItem, item.kind == .screenOnly {
+                    if let item = store.selectedItem {
                         let pts = corners(item, fit)
                         if let i = pts.indices.min(by: { dist(pts[$0], value.startLocation) < dist(pts[$1], value.startLocation) }),
-                           dist(pts[i], value.startLocation) < 14 {
+                           dist(pts[i], value.startLocation) < 12 {
                             dragHandle = i
+                            if item.kind != .screenOnly {
+                                let c = CGPoint(x: pts.map(\.x).reduce(0, +) / 4, y: pts.map(\.y).reduce(0, +) / 4)
+                                resizeStart = (item.size, max(1, dist(c, value.startLocation)))
+                            }
                         }
                     }
                     if dragHandle == nil {
@@ -239,7 +357,12 @@ private struct CanvasView: View {
                         if let hit { dragStart = (hit.x, hit.y) }
                     }
                 }
-                if let handle = dragHandle {
+                if dragHandle != nil, let resize = resizeStart, let item = store.selectedItem {
+                    // Corner handle of a device: scale around its center.
+                    let center = CGPoint(x: fit.minX + item.x * fit.width, y: fit.minY + item.y * fit.height)
+                    let k = Double(dist(center, value.location) / resize.distance)
+                    store.editSelected { $0.size = min(1.6, max(0.1, resize.size * k)) }
+                } else if let handle = dragHandle {
                     let x = Double((value.location.x - fit.minX) / fit.width)
                     let y = Double((value.location.y - fit.minY) / fit.height)
                     store.editSelected { item in
@@ -257,8 +380,14 @@ private struct CanvasView: View {
                             q = q.map { CGPoint(x: $0.x + tx, y: $0.y + ty) }
                             item.quad = q
                         } else {
-                            item.x = start.x + dx
-                            item.y = start.y + dy
+                            // Snap to the middle of the canvas, and show the guide.
+                            var x = start.x + dx, y = start.y + dy
+                            let snapV = abs(x - 0.5) < 0.012, snapH = abs(y - 0.5) < 0.012
+                            if snapV { x = 0.5 }
+                            if snapH { y = 0.5 }
+                            item.x = x
+                            item.y = y
+                            if guides.vertical != snapV || guides.horizontal != snapH { guides = (snapV, snapH) }
                         }
                     }
                 }
@@ -266,6 +395,8 @@ private struct CanvasView: View {
             .onEnded { _ in
                 dragStart = nil
                 dragHandle = nil
+                resizeStart = nil
+                guides = (false, false)
             }
     }
 
