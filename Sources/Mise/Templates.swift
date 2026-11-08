@@ -17,14 +17,15 @@ struct Template: Identifiable {
         return p
     }
 
-    static let lavender: Background = .gradient([hex("#EDE9FF"), hex("#FFE4EE")], angle: 135)
-    static let dusk: Background = .mesh([hex("#1B1640"), hex("#6E5BFF"), hex("#FF7AA8"), hex("#3B2E8F")], seed: 11)
-    static let sand: Background = .texture(.grain, hex("#EFE8DE"))
-    static let mint: Background = .gradient([hex("#D9F7EE"), hex("#E8F0FF")], angle: 160)
-    static let graphite: Background = .mesh([hex("#15161B"), hex("#2F3340"), hex("#3A3F55"), hex("#1E2230")], seed: 5)
-    static let peach: Background = .mesh([hex("#FFE9DD"), hex("#FFC6B0"), hex("#FFD9A8"), hex("#F7B7C8")], seed: 3)
-    static let paper: Background = .texture(.dots, hex("#F5F4F0"))
-    static let sky: Background = .gradient([hex("#4F7BFF"), hex("#9B6BFF")], angle: 120)
+    // Quiet, photographic backdrops: studio walls, soft mists and deep tones.
+    static let lavender: Background = .studio(hex("#ECE8F2"))
+    static let dusk: Background = .mesh([hex("#14121F"), hex("#3D3366"), hex("#8A6E9E"), hex("#231E3A")], seed: 11)
+    static let sand: Background = .studio(hex("#EAE3D8"))
+    static let mint: Background = .studio(hex("#DDE7E1"))
+    static let graphite: Background = .mesh([hex("#101115"), hex("#262A33"), hex("#3B3F4C"), hex("#16181E")], seed: 5)
+    static let peach: Background = .mesh([hex("#F6E7DE"), hex("#EDCFC2"), hex("#F3DFC8"), hex("#E8CDD2")], seed: 3)
+    static let paper: Background = .studio(hex("#EFEDE9"))
+    static let sky: Background = .gradient([hex("#5A6E9E"), hex("#8C7BA8")], angle: 120)
 
     static var all: [Template] {
         [

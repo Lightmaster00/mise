@@ -54,6 +54,8 @@ enum Background: Codable, Equatable {
     /// One of the user's photos.
     case image(asset: String, blur: Double, dim: Double)
     case transparent
+    /// A photo studio: a seamless wall curving into the floor, lit from above.
+    case studio(RGBA)
 
     enum TextureKind: String, Codable, CaseIterable { case grain, dots, grid, linen }
 }

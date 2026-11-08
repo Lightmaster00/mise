@@ -87,6 +87,7 @@ enum S {
     static var sendToBack: String { tr("Send to Back", "Mettre à l'arrière-plan", "Enviar al fondo", "Nach hinten", "最背面へ") }
     static var background: String { tr("Background", "Fond", "Fondo", "Hintergrund", "背景") }
     static var style: String { tr("Style", "Style", "Estilo", "Stil", "スタイル") }
+    static var bgStudio: String { tr("Studio", "Studio", "Estudio", "Studio", "スタジオ") }
     static var bgSolid: String { tr("Color", "Couleur", "Color", "Farbe", "単色") }
     static var bgGradient: String { tr("Gradient", "Dégradé", "Degradado", "Verlauf", "グラデーション") }
     static var bgMesh: String { tr("Soft Blend", "Fondu doux", "Mezcla suave", "Weicher Verlauf", "ソフトブレンド") }

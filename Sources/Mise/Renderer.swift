@@ -101,22 +101,70 @@ final class Renderer: @unchecked Sendable {
             drawReflection(flat, size: size, center: CGPoint(x: (points[0].x + points[2].x) / 2, y: (points[0].y + points[2].y) / 2), ctx: ctx)
         }
 
-        ctx.saveGState()
-        if shadow > 0 {
-            let s = CGFloat(shadow)
-            let unit = max(size.width, size.height)
-            ctx.setShadow(offset: CGSize(width: 0, height: -unit * 0.035 * s), blur: unit * 0.08 * s,
-                          color: CGColor(srgbRed: 0.05, green: 0.04, blue: 0.12, alpha: 0.32 + 0.25 * s))
-        }
+        // Where the device is drawn, and the image drawn there.
+        let placed: (image: CGImage, rect: CGRect, transform: CGAffineTransform)?
         if simple {
             let center = CGPoint(x: canvas.minX + item.x * canvas.width, y: canvas.maxY - item.y * canvas.height)
-            ctx.translateBy(x: center.x, y: center.y)
-            ctx.rotate(by: -CGFloat(item.rotation) * .pi / 180)
-            ctx.draw(flat, in: CGRect(x: -size.width / 2, y: -size.height / 2, width: size.width, height: size.height))
+            let t = CGAffineTransform(translationX: center.x, y: center.y).rotated(by: -CGFloat(item.rotation) * .pi / 180)
+            placed = (flat, CGRect(x: -size.width / 2, y: -size.height / 2, width: size.width, height: size.height), t)
         } else if let warped = warp(flat, to: points) {
-            ctx.draw(warped.image, in: warped.rect)
+            placed = (warped.image, warped.rect, .identity)
+        } else {
+            placed = nil
         }
+        guard let placed else { return }
+        let unit = max(size.width, size.height)
+
+        if shadow > 0 {
+            let s = CGFloat(shadow)
+            // Two shadows, like a photo: a wide soft one for the room, a tight dark one where it touches.
+            drawShadow(placed, offset: CGSize(width: 0, height: -unit * 0.05 * s), blur: unit * 0.12 * s,
+                       alpha: 0.20 + 0.12 * s, ctx: ctx)
+            drawShadow(placed, offset: CGSize(width: 0, height: -unit * 0.012 * s), blur: unit * 0.025 * s,
+                       alpha: 0.18 + 0.16 * s, ctx: ctx)
+        }
+
+        // Turned in 3D: show the device's thickness, its side seen behind the face.
+        let depth = DeviceRenderer.depth(of: item.kind) * min(size.width, size.height)
+        if !simple, depth > 0.5, let side = tinted(placed.image, finish.sideColor) {
+            let offset = Projection.depthOffset(depth: depth, yaw: item.yaw, pitch: item.pitch, rotation: item.rotation)
+            let steps = max(2, min(24, Int(hypot(offset.dx, offset.dy).rounded())))
+            for i in stride(from: steps, through: 1, by: -1) {
+                let k = CGFloat(i) / CGFloat(steps)
+                ctx.draw(side, in: placed.rect.offsetBy(dx: offset.dx * k, dy: offset.dy * k))
+            }
+        }
+
+        ctx.saveGState()
+        ctx.concatenate(placed.transform)
+        ctx.draw(placed.image, in: placed.rect)
         ctx.restoreGState()
+    }
+
+    /// Only the shadow of an image: the image is drawn far away and its shadow brought back
+    /// (shadow offsets are in canvas space, whatever the transform).
+    private func drawShadow(_ placed: (image: CGImage, rect: CGRect, transform: CGAffineTransform),
+                            offset: CGSize, blur: CGFloat, alpha: CGFloat, ctx: CGContext) {
+        let far: CGFloat = 100_000
+        ctx.saveGState()
+        ctx.setShadow(offset: CGSize(width: offset.width + far, height: offset.height), blur: blur,
+                      color: CGColor(srgbRed: 0.06, green: 0.05, blue: 0.10, alpha: min(alpha, 0.75)))
+        ctx.translateBy(x: -far, y: 0)
+        ctx.concatenate(placed.transform)
+        ctx.draw(placed.image, in: placed.rect)
+        ctx.restoreGState()
+    }
+
+    /// The image's silhouette filled with one color.
+    private func tinted(_ image: CGImage, _ color: CGColor) -> CGImage? {
+        guard let ctx = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0,
+                                  space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        let r = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+        ctx.draw(image, in: r)
+        ctx.setBlendMode(.sourceIn)
+        ctx.setFillColor(color)
+        ctx.fill(r)
+        return ctx.makeImage()
     }
 
     /// Maps an image onto four points (top left, top right, bottom right, bottom left; CG coordinates).
@@ -173,6 +221,8 @@ final class Renderer: @unchecked Sendable {
         switch p.background {
         case .transparent:
             break
+        case .studio(let c):
+            drawStudio(c, in: r, ctx: ctx)
         case .solid(let c):
             ctx.setFillColor(c.cgColor)
             ctx.fill(r)
@@ -186,6 +236,7 @@ final class Renderer: @unchecked Sendable {
             if let g = CGGradient(colorsSpace: space, colors: list.map(\.cgColor) as CFArray, locations: locations) {
                 ctx.drawLinearGradient(g, start: start, end: end, options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
             }
+            drawGrain(in: r, amount: 0.03, ctx: ctx)
         case .mesh(let colors, let seed):
             let list = colors.isEmpty ? [RGBA.white] : colors
             ctx.setFillColor(list[0].cgColor)
@@ -259,6 +310,49 @@ final class Renderer: @unchecked Sendable {
         }
     }
 
+    /// A seamless paper backdrop: the wall gets a little darker toward the floor, the floor a little lighter
+    /// toward the camera, a soft light from above, a gentle vignette and some grain.
+    private func drawStudio(_ c: RGBA, in r: CGRect, ctx: CGContext) {
+        func shade(_ k: Double) -> CGColor {
+            CGColor(srgbRed: min(1, c.r * k), green: min(1, c.g * k), blue: min(1, c.b * k), alpha: 1)
+        }
+        let horizon = r.minY + r.height * 0.36
+        let wall = [shade(1.04), shade(0.97), shade(0.90)] as CFArray
+        if let g = CGGradient(colorsSpace: space, colors: wall, locations: [0, 0.75, 1]) {
+            ctx.drawLinearGradient(g, start: CGPoint(x: r.midX, y: r.maxY), end: CGPoint(x: r.midX, y: horizon),
+                                   options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
+        }
+        // The floor, with a soft curve where it meets the wall.
+        ctx.saveGState()
+        ctx.clip(to: CGRect(x: r.minX, y: r.minY, width: r.width, height: horizon - r.minY))
+        let floor = [shade(0.90), shade(0.95), shade(1.0)] as CFArray
+        if let g = CGGradient(colorsSpace: space, colors: floor, locations: [0, 0.35, 1]) {
+            ctx.drawLinearGradient(g, start: CGPoint(x: r.midX, y: horizon), end: CGPoint(x: r.midX, y: r.minY),
+                                   options: [.drawsAfterEndLocation])
+        }
+        ctx.restoreGState()
+        // Key light from above.
+        let light = CGPoint(x: r.midX, y: r.maxY - r.height * 0.1)
+        let glow = [CGColor(gray: 1, alpha: 0.22), CGColor(gray: 1, alpha: 0)] as CFArray
+        if let g = CGGradient(colorsSpace: space, colors: glow, locations: [0, 1]) {
+            ctx.drawRadialGradient(g, startCenter: light, startRadius: 0, endCenter: light,
+                                   endRadius: max(r.width, r.height) * 0.7, options: [])
+        }
+        drawVignette(in: r, strength: 0.16, ctx: ctx)
+        drawGrain(in: r, amount: 0.05, ctx: ctx)
+    }
+
+    /// Darker corners, like a lens.
+    private func drawVignette(in r: CGRect, strength: CGFloat, ctx: CGContext) {
+        let center = CGPoint(x: r.midX, y: r.midY)
+        let radius = hypot(r.width, r.height) / 2
+        let colors = [CGColor(gray: 0, alpha: 0), CGColor(gray: 0, alpha: strength)] as CFArray
+        if let g = CGGradient(colorsSpace: space, colors: colors, locations: [0.55, 1]) {
+            ctx.drawRadialGradient(g, startCenter: center, startRadius: 0, endCenter: center, endRadius: radius,
+                                   options: [.drawsAfterEndLocation])
+        }
+    }
+
     private func luminance(_ c: RGBA) -> Double { 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b }
 
     /// Fine noise over the background (looks like printed paper rather than flat pixels).
@@ -301,6 +395,15 @@ struct SeededRandom {
 
 /// 3D rotation and perspective of a flat rectangle.
 enum Projection {
+    /// Where the back of a slab `depth` thick appears, relative to its face, once turned.
+    static func depthOffset(depth: CGFloat, yaw: Double, pitch: Double, rotation: Double) -> CGVector {
+        let ya = yaw * .pi / 180, pa = pitch * .pi / 180, ra = -rotation * .pi / 180
+        // The back is behind the face (away from the viewer): turn the point (0, 0, depth).
+        let x = -depth * sin(ya)
+        let y = -depth * cos(ya) * sin(pa)
+        return CGVector(dx: x * cos(ra) - y * sin(ra), dy: x * sin(ra) + y * cos(ra))
+    }
+
     /// Corners (top left, top right, bottom right, bottom left), CG coordinates (y up).
     static func corners(width w: CGFloat, height h: CGFloat, yaw: Double, pitch: Double,
                         rotation: Double, center: CGPoint) -> [CGPoint] {

@@ -127,10 +127,11 @@ struct InspectorView: View {
     // MARK: Background
 
     private enum BackgroundKind: String, CaseIterable, Identifiable {
-        case solid, gradient, mesh, texture, image, transparent
+        case studio, solid, gradient, mesh, texture, image, transparent
         var id: String { rawValue }
         var title: String {
             switch self {
+            case .studio: return S.bgStudio
             case .solid: return S.bgSolid
             case .gradient: return S.bgGradient
             case .mesh: return S.bgMesh
@@ -143,6 +144,7 @@ struct InspectorView: View {
 
     private var backgroundKind: BackgroundKind {
         switch store.project.background {
+        case .studio: return .studio
         case .solid: return .solid
         case .gradient: return .gradient
         case .mesh: return .mesh
@@ -154,7 +156,7 @@ struct InspectorView: View {
 
     private var palette: [RGBA] {
         switch store.project.background {
-        case .solid(let c), .texture(_, let c): return [c]
+        case .solid(let c), .texture(_, let c), .studio(let c): return [c]
         case .gradient(let c, _), .mesh(let c, _): return c
         default: return [RGBA(hex: "#EDE9FF")!, RGBA(hex: "#FFE4EE")!]
         }
@@ -166,6 +168,8 @@ struct InspectorView: View {
                 ForEach(BackgroundKind.allCases) { Text($0.title).tag($0) }
             }
             switch store.project.background {
+            case .studio(let c):
+                colorRow(S.color, c) { new in store.edit { $0.background = .studio(new) } }
             case .solid(let c):
                 colorRow(S.color, c) { new in store.edit { $0.background = .solid(new) } }
             case .gradient(let colors, let angle):
@@ -209,6 +213,7 @@ struct InspectorView: View {
     private func setBackgroundKind(_ kind: BackgroundKind) {
         let colors = palette
         switch kind {
+        case .studio: store.edit { $0.background = .studio(colors[0]) }
         case .solid: store.edit { $0.background = .solid(colors[0]) }
         case .gradient: store.edit { $0.background = .gradient(colors.count >= 2 ? Array(colors.prefix(3)) : [colors[0], .white], angle: 135) }
         case .mesh: store.edit { $0.background = .mesh(colors.count >= 3 ? colors : colors + [RGBA(hex: "#FFC6B0")!, RGBA(hex: "#B8A6FF")!], seed: 11) }
