@@ -84,6 +84,11 @@ extension DeviceKind {
     var shortTitle: String {
         switch self {
         case .screenOnly: return S.kindPhotoShort
+        case .phoneAndroid: return "Android"
+        case .browser: return S.shortBrowser
+        case .floating: return S.shortFloating
+        case .businessCard: return S.shortCard
+        case .paper: return S.shortPaper
         default: return title
         }
     }
@@ -190,14 +195,16 @@ private struct TemplateCell: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 4) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.primary.opacity(0.06))
-                    if let image {
-                        Image(decorative: image, scale: 1).resizable().scaledToFill()
+                // Every cell is 4:3, whatever the template's proportions.
+                Color.primary.opacity(0.06)
+                    .aspectRatio(4 / 3, contentMode: .fit)
+                    .overlay {
+                        if let image {
+                            Image(decorative: image, scale: 1).resizable().scaledToFill()
+                        }
                     }
-                }
-                .aspectRatio(4 / 3, contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .strokeBorder(hover ? Color.accentColor : Color.primary.opacity(0.1), lineWidth: hover ? 1.5 : 0.5))
                 Text(title).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)

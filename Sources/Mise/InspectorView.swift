@@ -324,19 +324,22 @@ struct InspectorView: View {
 
     /// Preset colors plus a picker for anything else.
     private func swatchRow(_ current: RGBA, _ set: @escaping (RGBA) -> Void) -> some View {
-        LabeledContent(S.color) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(S.color)
+            HStack(spacing: 5) {
                 ForEach(Self.swatches, id: \.hex) { c in
                     Button { set(c) } label: {
                         Circle()
                             .fill(Color(.sRGB, red: c.r, green: c.g, blue: c.b))
                             .overlay(Circle().strokeBorder(.primary.opacity(0.15), lineWidth: 0.5))
                             .overlay(Circle().strokeBorder(Color.accentColor, lineWidth: 2).padding(-3).opacity(c.hex == current.hex ? 1 : 0))
-                            .frame(width: 16, height: 16)
+                            .frame(width: 15, height: 15)
+                            .padding(2)
                     }
                     .buttonStyle(.plain)
                     .help(c.hex)
                 }
+                Spacer(minLength: 4)
                 ColorPicker("", selection: Binding(get: {
                     Color(.sRGB, red: current.r, green: current.g, blue: current.b)
                 }, set: { c in
@@ -345,8 +348,10 @@ struct InspectorView: View {
                     }
                 }), supportsOpacity: false)
                 .labelsHidden()
+                .frame(width: 38)
             }
         }
+        .padding(.vertical, 2)
     }
 
     private func setBackgroundKind(_ kind: BackgroundKind) {

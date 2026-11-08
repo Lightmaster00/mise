@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1
+
+- Template thumbnails line up in an even grid.
+- Shorter device names under the tiles, so none is cut off.
+- Background colors fit the inspector, with the color picker at the end of the row.
+- The update window shows these notes.
+
 ## 1.3.0
 
 - Redesigned window. The sidebar lists what is in the scene (drag to reorder, right-click for actions) above a compact grid of templates.

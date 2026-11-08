@@ -115,6 +115,10 @@ enum S {
     static var emptyText: String { tr("Add a device, or pick a template on the left, then drop a screenshot onto it.", "Ajoute un appareil ou choisis un modèle à gauche, puis dépose une capture dessus.", "Añade un dispositivo o elige una plantilla a la izquierda y suelta una captura encima.", "Füge ein Gerät hinzu oder wähle links eine Vorlage, und ziehe dann einen Screenshot darauf.", "デバイスを追加するか左のテンプレートを選び、スクリーンショットをドロップします。") }
     static var addPhone: String { tr("Phone", "Téléphone", "Teléfono", "Telefon", "スマホ") }
     static var addLaptop: String { tr("Laptop", "Portable", "Portátil", "Laptop", "ノートPC") }
+    static var shortBrowser: String { tr("Browser", "Navigateur", "Navegador", "Browser", "ブラウザ") }
+    static var shortFloating: String { tr("Floating", "Flottant", "Flotante", "Schwebend", "フロート") }
+    static var shortCard: String { tr("Card", "Carte", "Tarjeta", "Karte", "名刺") }
+    static var shortPaper: String { tr("Paper", "Feuille", "Hoja", "Blatt", "用紙") }
     static var light: String { tr("Light", "Lumière", "Luz", "Licht", "光") }
     static var lightNone: String { tr("None", "Aucune", "Ninguna", "Keines", "なし") }
     static var lightLeaves: String { tr("Leaves", "Feuillage", "Hojas", "Blätter", "葉の影") }
