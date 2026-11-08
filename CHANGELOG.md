@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0
+
+- Redesigned window. The sidebar lists what is in the scene (drag to reorder, right-click for actions) above a compact grid of templates.
+- The inspector has three pages: Device, Scene and Export.
+- Devices, backgrounds and light are picked from tiles; finishes are color beads; nine one-click angles (front, left, right, tilted, isometric, lying flat…), with sliders tucked under Fine Tuning.
+- A design well shows the current image and accepts drops.
+- On the canvas: corner handles resize a device, and it snaps to the center with guides.
+- A welcome panel when the scene is empty, and a reminder to drop a design on an empty device.
+- A clear Export button in the toolbar.
+
 ## 1.2.0
 
 - New Light section: soft shadows of leaves, a window or blinds cast across the whole scene, with strength, angle and a shuffle button.
