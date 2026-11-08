@@ -8,8 +8,9 @@ struct Template: Identifiable {
 
     private static func hex(_ s: String) -> RGBA { RGBA(hex: s)! }
 
-    private static func project(_ w: Int, _ h: Int, _ bg: Background, _ items: [Item]) -> Project {
+    private static func project(_ w: Int, _ h: Int, _ bg: Background, _ items: [Item], light: Light? = nil) -> Project {
         var p = Project()
+        p.light = light
         p.width = w
         p.height = h
         p.background = bg
@@ -33,7 +34,8 @@ struct Template: Identifiable {
                 project(1600, 1200, lavender, [Item(.phone, size: 0.78)])
             },
             Template(id: "phoneTilted", title: S.tplPhoneTilted) {
-                project(1600, 1200, dusk, [Item(.phone, finish: "silver", size: 0.8, rotation: -8, yaw: -22, pitch: 8, shadow: 0.8)])
+                project(1600, 1200, .studio(hex("#E2C48E")), [Item(.phone, finish: "graphite", size: 0.8, rotation: -8, yaw: -22, pitch: 8, shadow: 0.8)],
+                        light: Light(kind: .leaves, strength: 0.6, angle: 25, seed: 4))
             },
             Template(id: "threePhones", title: S.tplThreePhones) {
                 project(1920, 1080, peach, [
@@ -49,7 +51,8 @@ struct Template: Identifiable {
                 ])
             },
             Template(id: "laptop", title: S.tplLaptop) {
-                project(1600, 1200, sand, [Item(.laptop, finish: "spacegray", size: 0.62)])
+                project(1600, 1200, sand, [Item(.laptop, finish: "spacegray", size: 0.62)],
+                        light: Light(kind: .window, strength: 0.45, angle: 20, seed: 2))
             },
             Template(id: "laptopAngle", title: S.tplLaptopAngle) {
                 project(1600, 1200, graphite, [Item(.laptop, finish: "midnight", size: 0.6, yaw: 24, pitch: 6, shadow: 0.9)])
@@ -73,7 +76,8 @@ struct Template: Identifiable {
                 project(1600, 1200, mint, [Item(.floating, finish: "light", size: 0.7, yaw: 18, pitch: 10, shadow: 0.7)])
             },
             Template(id: "card", title: S.tplCard) {
-                project(1600, 1200, sand, [Item(.businessCard, finish: "paper", size: 0.42, rotation: -8, shadow: 0.6)])
+                project(1600, 1200, .studio(hex("#B9C9B5")), [Item(.businessCard, finish: "paper", size: 0.42, rotation: -8, shadow: 0.6)],
+                        light: Light(kind: .blinds, strength: 0.4, angle: 35, seed: 1))
             },
             Template(id: "poster", title: S.tplPoster) {
                 project(1200, 1500, .texture(.linen, hex("#E9E4DA")), [Item(.poster, finish: "paper", size: 0.8, shadow: 0.5)])

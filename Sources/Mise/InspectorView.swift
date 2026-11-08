@@ -34,6 +34,7 @@ struct InspectorView: View {
                 }
             }
             backgroundSection
+            lightSection
             canvasSection
             exportSection
         }
@@ -206,6 +207,35 @@ struct InspectorView: View {
                 slider(S.darken, dim, 0...0.9) { v in store.edit { $0.background = .image(asset: asset, blur: blur, dim: v) } }
             case .transparent:
                 Text(S.transparentHint).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    // MARK: Light
+
+    private var lightSection: some View {
+        Section(S.light) {
+            Picker(S.style, selection: Binding(get: { store.project.light?.kind.rawValue ?? "none" }, set: { k in
+                store.edit { p in
+                    if let kind = Light.Kind(rawValue: k) {
+                        var l = p.light ?? Light(kind: kind)
+                        l.kind = kind
+                        p.light = l
+                    } else {
+                        p.light = nil
+                    }
+                }
+            })) {
+                Text(S.lightNone).tag("none")
+                Text(S.lightLeaves).tag(Light.Kind.leaves.rawValue)
+                Text(S.lightWindow).tag(Light.Kind.window.rawValue)
+                Text(S.lightBlinds).tag(Light.Kind.blinds.rawValue)
+            }
+            if let l = store.project.light {
+                slider(S.strength, l.strength, 0...1) { v in store.edit { $0.light?.strength = v } }
+                slider(S.angle, l.angle, 0...360, unit: "°") { v in store.edit { $0.light?.angle = v } }
+                Button(S.shuffle) { store.edit { $0.light?.seed = Int.random(in: 0...999_999) } }
+                    .controlSize(.small)
             }
         }
     }

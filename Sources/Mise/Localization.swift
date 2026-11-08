@@ -87,6 +87,12 @@ enum S {
     static var sendToBack: String { tr("Send to Back", "Mettre à l'arrière-plan", "Enviar al fondo", "Nach hinten", "最背面へ") }
     static var background: String { tr("Background", "Fond", "Fondo", "Hintergrund", "背景") }
     static var style: String { tr("Style", "Style", "Estilo", "Stil", "スタイル") }
+    static var light: String { tr("Light", "Lumière", "Luz", "Licht", "光") }
+    static var lightNone: String { tr("None", "Aucune", "Ninguna", "Keines", "なし") }
+    static var lightLeaves: String { tr("Leaves", "Feuillage", "Hojas", "Blätter", "葉の影") }
+    static var lightWindow: String { tr("Window", "Fenêtre", "Ventana", "Fenster", "窓") }
+    static var lightBlinds: String { tr("Blinds", "Store", "Persiana", "Jalousie", "ブラインド") }
+    static var strength: String { tr("Strength", "Intensité", "Intensidad", "Stärke", "強さ") }
     static var bgStudio: String { tr("Studio", "Studio", "Estudio", "Studio", "スタジオ") }
     static var bgSolid: String { tr("Color", "Couleur", "Color", "Farbe", "単色") }
     static var bgGradient: String { tr("Gradient", "Dégradé", "Degradado", "Verlauf", "グラデーション") }

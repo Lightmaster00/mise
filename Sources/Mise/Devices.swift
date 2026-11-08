@@ -12,6 +12,14 @@ struct Finish: Identifiable, Equatable {
 
     static func == (a: Finish, b: Finish) -> Bool { a.id == b.id }
 
+    /// The side band, from the back to the front: in shadow, catching the light, then the front lip.
+    var sideShades: [CGColor] {
+        let print = ["paper", "kraft"].contains(id)
+        func shade(_ c: RGBA, _ k: Double) -> CGColor { CGColor(srgbRed: min(1, c.r * k), green: min(1, c.g * k), blue: min(1, c.b * k), alpha: 1) }
+        if print { return [shade(surface, 0.72), shade(surface, 0.86), shade(surface, 0.80)] }
+        return [shade(edge.0, 0.7), shade(edge.1, 1.0), shade(edge.2, 0.85)]
+    }
+
     /// The device's side, seen when it is turned in 3D: a darker shade of the edge.
     var sideColor: CGColor {
         let base = ["paper", "kraft"].contains(id) ? surface : edge.2
@@ -473,13 +481,13 @@ enum DeviceRenderer {
         fillMetal(bodyPath, body, f, ctx)
         rimLight(bodyPath, body, width: W * 0.012, strength: 0.55, ctx)
         // Black glass around the screen, with a fine dark line where it meets the frame.
-        let glass = body.insetBy(dx: W * 0.017, dy: W * 0.017)
-        let glassPath = rounded(glass, radius - W * 0.017)
+        let glass = body.insetBy(dx: W * 0.013, dy: W * 0.013)
+        let glassPath = rounded(glass, radius - W * 0.013)
         ctx.setFillColor(CGColor(srgbRed: 0.015, green: 0.015, blue: 0.02, alpha: 1))
         ctx.addPath(glassPath); ctx.fillPath()
         stroke(glassPath, gray(0, 0.6), W * 0.004, ctx)
-        let s = glass.insetBy(dx: W * 0.024, dy: W * 0.024)
-        drawScreen(screen, in: s, radius: radius - W * 0.041, ctx: ctx, turned: turned)
+        let s = glass.insetBy(dx: W * 0.017, dy: W * 0.017)
+        drawScreen(screen, in: s, radius: radius - W * 0.030, ctx: ctx, turned: turned)
         // Camera: a pill (island) or a punch hole.
         if android {
             let d = W * 0.042

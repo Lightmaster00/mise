@@ -128,6 +128,18 @@ struct Item: Codable, Equatable, Identifiable {
     }
 }
 
+/// Shadows cast over the scene, as when a photo is taken near a plant or a window.
+struct Light: Codable, Equatable {
+    enum Kind: String, Codable, CaseIterable, Identifiable {
+        case leaves, window, blinds
+        var id: String { rawValue }
+    }
+    var kind: Kind
+    var strength: Double = 0.5
+    var angle: Double = 30
+    var seed: Int = 7
+}
+
 /// A mockup: canvas, background, devices and the images they use.
 struct Project: Codable, Equatable {
     static let maxItems = 24
@@ -139,6 +151,8 @@ struct Project: Codable, Equatable {
     var height = 1200
     var background: Background = .gradient([RGBA(hex: "#E9E4FF")!, RGBA(hex: "#FFE3EC")!], angle: 135)
     var items: [Item] = []
+    /// Light falling across the whole scene (leaves, a window, blinds), or none.
+    var light: Light?
     /// PNG/JPEG data of the images, by identifier.
     var assets: [String: Data] = [:]
 
@@ -162,6 +176,11 @@ struct Project: Codable, Equatable {
             let c = colors.count < 2 ? [RGBA(hex: "#1B1640")!, RGBA(hex: "#6E5BFF")!] : Array(colors.prefix(8))
             background = .mesh(c, seed: seed)
         default: break
+        }
+        if var l = light {
+            l.strength = min(max(l.strength.isFinite ? l.strength : 0.5, 0), 1)
+            l.angle = l.angle.isFinite ? l.angle.truncatingRemainder(dividingBy: 360) : 30
+            light = l
         }
         if case .image(let asset, let blur, let dim) = background {
             background = assets[asset] == nil ? .solid(.white)

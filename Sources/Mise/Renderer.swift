@@ -56,6 +56,9 @@ final class Renderer: @unchecked Sendable {
             let screen = item.screen.flatMap { id in project.assets[id].flatMap { image(id, data: $0, maxPixels: maxScreen) } }
             draw(item, screen: screen, canvas: canvas, ctx: ctx)
         }
+        if let light = project.light, light.strength > 0.01 {
+            drawLight(light, in: canvas, ctx: ctx)
+        }
         return ctx.makeImage()
     }
 
@@ -126,12 +129,17 @@ final class Renderer: @unchecked Sendable {
 
         // Turned in 3D: show the device's thickness, its side seen behind the face.
         let depth = DeviceRenderer.depth(of: item.kind) * min(size.width, size.height)
-        if !simple, depth > 0.5, let side = tinted(placed.image, finish.sideColor) {
-            let offset = Projection.depthOffset(depth: depth, yaw: item.yaw, pitch: item.pitch, rotation: item.rotation)
-            let steps = max(2, min(24, Int(hypot(offset.dx, offset.dy).rounded())))
-            for i in stride(from: steps, through: 1, by: -1) {
-                let k = CGFloat(i) / CGFloat(steps)
-                ctx.draw(side, in: placed.rect.offsetBy(dx: offset.dx * k, dy: offset.dy * k))
+        if !simple, depth > 0.5 {
+            let shades = finish.sideShades.compactMap { tinted(placed.image, $0) }
+            if shades.count == 3 {
+                let offset = Projection.depthOffset(depth: depth, yaw: item.yaw, pitch: item.pitch, rotation: item.rotation)
+                let steps = max(3, min(32, Int(hypot(offset.dx, offset.dy).rounded())))
+                // A rounded metal band: dark at the back, a bright line across the middle, a mid tone at the front.
+                for i in stride(from: steps, through: 1, by: -1) {
+                    let k = CGFloat(i) / CGFloat(steps)
+                    let side = k > 0.62 ? shades[0] : (k > 0.30 ? shades[1] : shades[2])
+                    ctx.draw(side, in: placed.rect.offsetBy(dx: offset.dx * k, dy: offset.dy * k))
+                }
             }
         }
 
@@ -356,6 +364,105 @@ final class Renderer: @unchecked Sendable {
     private func luminance(_ c: RGBA) -> Double { 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b }
 
     /// Fine noise over the background (looks like printed paper rather than flat pixels).
+    // MARK: Light
+
+    /// Casts soft shadows over the whole scene, devices included, like light through a plant or a window.
+    private func drawLight(_ light: Light, in r: CGRect, ctx: CGContext) {
+        // Draw the shadow shapes small, blur them, then lay them over the scene in multiply.
+        let scale = min(1, 900 / max(r.width, r.height))
+        let w = max(8, Int(r.width * scale)), h = max(8, Int(r.height * scale))
+        guard let m = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0, space: space,
+                                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return }
+        let rect = CGRect(x: 0, y: 0, width: w, height: h)
+        m.setFillColor(CGColor(gray: 1, alpha: 1))
+        m.fill(rect)
+        m.translateBy(x: rect.midX, y: rect.midY)
+        m.rotate(by: CGFloat(light.angle) * .pi / 180)
+        let side = hypot(rect.width, rect.height)
+        let area = CGRect(x: -side / 2, y: -side / 2, width: side, height: side)
+        let shade = CGColor(srgbRed: 0.30, green: 0.29, blue: 0.36, alpha: 1)
+        var rng = SeededRandom(seed: UInt64(max(0, light.seed)))
+        let blur: CGFloat
+        switch light.kind {
+        case .leaves:
+            m.setFillColor(shade)
+            m.setStrokeColor(shade)
+            m.setLineCap(.round)
+            blur = side * 0.006
+            for _ in 0..<7 {
+                // A branch coming in from the left, curving across, with leaves along it.
+                var p = CGPoint(x: area.minX - side * 0.05, y: area.minY + rng.next() * area.height)
+                var dir = (rng.next() - 0.5) * 0.9
+                let length = side * (0.45 + rng.next() * 0.45)
+                var travelled: CGFloat = 0
+                let stem = CGMutablePath()
+                stem.move(to: p)
+                while travelled < length {
+                    let stepLen = side * 0.02
+                    dir += (rng.next() - 0.5) * 0.25
+                    p = CGPoint(x: p.x + cos(dir) * stepLen, y: p.y + sin(dir) * stepLen)
+                    stem.addLine(to: p)
+                    travelled += stepLen
+                    if rng.next() < 0.75 {
+                        let leafLen = side * (0.035 + rng.next() * 0.045)
+                        let sideSign: CGFloat = rng.next() > 0.5 ? 1 : -1
+                        let a = dir + sideSign * (0.5 + rng.next() * 0.7)
+                        m.saveGState()
+                        m.translateBy(x: p.x, y: p.y)
+                        m.rotate(by: a)
+                        let leaf = CGMutablePath()
+                        leaf.move(to: .zero)
+                        leaf.addQuadCurve(to: CGPoint(x: leafLen, y: 0), control: CGPoint(x: leafLen * 0.5, y: leafLen * 0.32))
+                        leaf.addQuadCurve(to: .zero, control: CGPoint(x: leafLen * 0.5, y: -leafLen * 0.32))
+                        m.addPath(leaf)
+                        m.fillPath()
+                        m.restoreGState()
+                    }
+                }
+                m.setLineWidth(side * 0.004)
+                m.addPath(stem)
+                m.strokePath()
+            }
+        case .window:
+            // Shade everywhere but four panes of sunlight, stretched as light falls at an angle.
+            m.setFillColor(shade)
+            m.fill(area)
+            m.setFillColor(CGColor(gray: 1, alpha: 1))
+            let pane = side * 0.2, bar = side * 0.025
+            let origin = CGPoint(x: -pane - bar / 2 + (rng.next() - 0.5) * side * 0.2, y: -pane * 0.9)
+            m.concatenate(CGAffineTransform(a: 1, b: 0, c: 0.45, d: 1.3, tx: 0, ty: 0))
+            for i in 0..<2 {
+                for j in 0..<2 {
+                    m.fill(CGRect(x: origin.x + CGFloat(i) * (pane + bar), y: origin.y + CGFloat(j) * (pane + bar), width: pane, height: pane))
+                }
+            }
+            blur = side * 0.012
+        case .blinds:
+            m.setFillColor(shade)
+            let gap = side * 0.06
+            var y = area.minY + rng.next() * gap
+            while y < area.maxY {
+                m.fill(CGRect(x: area.minX, y: y, width: area.width, height: gap * 0.45))
+                y += gap
+            }
+            blur = side * 0.008
+        }
+        guard let mask = m.makeImage() else { return }
+        var out = mask
+        if let f = CIFilter(name: "CIGaussianBlur") {
+            let input = CIImage(cgImage: mask).clampedToExtent()
+            f.setValue(input, forKey: kCIInputImageKey)
+            f.setValue(blur, forKey: kCIInputRadiusKey)
+            if let o = f.outputImage?.cropped(to: CGRect(x: 0, y: 0, width: w, height: h)),
+               let img = ci.createCGImage(o, from: CGRect(x: 0, y: 0, width: w, height: h)) { out = img }
+        }
+        ctx.saveGState()
+        ctx.setBlendMode(.multiply)
+        ctx.setAlpha(CGFloat(light.strength) * 0.75)
+        ctx.draw(out, in: r)
+        ctx.restoreGState()
+    }
+
     private func drawGrain(in r: CGRect, amount: CGFloat, ctx: CGContext) {
         let size = 256
         guard let noise = Self.noiseTile(size: size) else { return }
